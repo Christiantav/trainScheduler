@@ -1,31 +1,43 @@
-  var config = {
+$( document ).ready(function() {
+  
+var config = {
     apiKey: "AIzaSyDwXkyXdC5pARfHCpnCrGvCGuthZeiLDm4",
     authDomain: "trainscheduler-ce2fd.firebaseapp.com",
     databaseURL: "https://trainscheduler-ce2fd.firebaseio.com",
-    projectId: "trainscheduler-ce2fd",
-    storageBucket: "trainscheduler-ce2fd.appspot.com",
-    messagingSenderId: "638978974653"
-    };
-  firebase.initializeApp(config);
-  var trainInformation = firebase.database();  
+    storageBucket: "trainscheduler-ce2fd.appspot.com"
+};
 
-  // Save a new recommendation to the database, using the input in the for
-  $("#submitTrain").on("click", function(){
+firebase.initializeApp(config);
+
+var trainInformation = firebase.database();  
+
+  // Save a new recommendation to the database using the input in the for
+$("#submitTrain").on("click", function(){
 
   // Get input values from each of the form elements
   var train = $("#trainName").val().trim();
   var destination = $("#destination").val().trim();
-  var firstTrainTime = moment($("#firstTrainTime").val().trim(), "HH:mm").subtract(1, "years");
+  var firstTrainTime = $("#firstTrainTime").val().trim();
   var frequency = $("#frequency").val().trim();
+
+  console.log("Hello");
+
   // Push a new train information set to the database using those values
    var newTrainInformation = {
     train: train,
     destination: destination,
     firstTrainTime: firstTrainTime,
     frequency: frequency
-  }
+  };
 
   trainInformation.ref().push(newTrainInformation);
+
+  // Logs everything to console
+  console.log(newTrainInformation.train);
+  console.log(newTrainInformation.destination);
+  console.log(newTrainInformation.firstTrainTime);
+  console.log(newTrainInformation.frequency);
+
 
   $("#trainName").val("");
   $("#destination").val("");
@@ -38,7 +50,6 @@
 
 trainInformation.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-    console.log(childSnapshot.val());
   
     // Store everything into a variable.
     var trainName = childSnapshot.val().train;
@@ -62,13 +73,14 @@ trainInformation.ref().on("child_added", function(childSnapshot, prevChildKey) {
       // To calculate the minutes till arrival, take the current time in unix subtract the FirstTrain time
       // and find the modulus between the difference and the frequency.
       var differenceTimes = moment().diff(trainTime, "minutes");
-      var remainingMinutes = differenceTimes % frequency;
-      trainMinutes = frequency - remainingMinutes;
+      var remainingMinutes = differenceTimes % trainFrequency;
+      trainMinutes = trainFrequency - remainingMinutes;
       // To calculate the arrival time, add the tMinutes to the current time
       trainArrival = moment().add(trainMinutes, "m").format("hh:mm A");
     }
     console.log("trainMinutes:", trainMinutes);
     console.log("trainArrival:", trainArrival);
   
-  $("#trainTable").append("<tr><td class='col'>" + trainName + "</td><td class='col'>" + trainDestination + "</td><td class='col'>" + trainFrequency + " mins" + "</td><td class='col'>" + trainArrival + "</td><td class='col'>" + trainMinutes + "</td></tr>");
+  $("#trainTable").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + trainFrequency + " mins" + "</td><td>" + trainArrival + "</td><td>" + trainMinutes + "</td></tr>");
+});
 });
